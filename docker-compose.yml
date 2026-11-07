@@ -1,0 +1,37 @@
+services:
+  api:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_TYPE: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: ibi
+      DATABASE_PASSWORD: ibi
+      DATABASE_NAME: ibi
+      DATABASE_SYNCHRONIZE: 'true'
+      JWT_SECRET: replace-this-development-secret-with-32-characters
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ibi
+      POSTGRES_PASSWORD: ibi
+      POSTGRES_DB: ibi
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ibi -d ibi']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+volumes:
+  postgres-data:
